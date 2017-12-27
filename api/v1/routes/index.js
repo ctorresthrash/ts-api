@@ -2,6 +2,9 @@
 
 const {jwtValidateFunction} = require('../../../validations/auth');
 const config = require('../../../config/config.json');
+const fs = require('fs-extra');
+const path = require('path');
+const basename = path.basename(__filename);
 
 exports.register = function (server, options, next) {
 
@@ -22,6 +25,8 @@ exports.register = function (server, options, next) {
   server
     .auth
     .default('jwt');
+
+  server.log('info', fs.readdirSync(__dirname).filter(file=>!file.includes('index')));
 
   server.route([
     {
@@ -44,7 +49,15 @@ exports.register = function (server, options, next) {
         reply({text: 'You used a Token!'}).header("Authorization", request.headers.authorization);
       }
     },
-    ...require("./auth")
+    ...fs.readdirSync(__dirname)
+      .filter(file=>(file.indexOf('.') !== 0) && (file !== basename) && (file.slice(-3) === '.js'))
+        .reduce((fileArray, file)=>{
+          let route = require(`./${file}`);
+          if(Array.isArray(route)){
+            fileArray.push(...route);
+          }
+          return fileArray;
+        },[])
   ]);
 
   return next();
