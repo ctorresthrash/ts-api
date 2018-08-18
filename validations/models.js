@@ -7,7 +7,7 @@ module.exports = {
   }),
   signupSchema: Joi.object().keys({
     firstName: Joi.string().required(),
-    lastName: Joi.string().required(),
+    lastName: Joi.string(),
     username: Joi.string().required(),
     email: Joi.string().email().required(),
     password: Joi.string().required(),
